@@ -151,8 +151,8 @@ async fn find_diffs(dir1: &OsString, dir2: &OsString) -> std::io::Result<(Vec<Os
     
     let diff: HashSet<_> = names1.symmetric_difference(&names2).collect();
 
-    let lefts: Vec<OsString> = diff.to_owned().into_iter().filter(| &nm | names1.contains(nm)).map(|nm| nm.clone()).collect();
-    let rights: Vec<OsString> = diff.into_iter().filter(| &nm | names2.contains(nm)).map(|nm| nm.clone()).collect();
+    let lefts: Vec<OsString> = names1.difference(&names2).map(|nm| nm.to_owned()).collect();
+    let rights: Vec<OsString> = names2.difference(&names1).map(|nm| nm.to_owned()).collect();
 
     Ok((lefts, rights))
 }
