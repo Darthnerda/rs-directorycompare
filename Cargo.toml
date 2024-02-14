@@ -9,5 +9,10 @@ edition = "2021"
 futures = "0.3"
 tokio = { version = "1.35.1", features = ["full"] }
 async-recursion = "1.0.5"
-eframe = "0.25.0"
+eframe = "0.26.0"
+egui_extras = "0.26.0"
 rfd = "0.13.0"
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
