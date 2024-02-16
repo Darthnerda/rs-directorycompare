@@ -1,4 +1,5 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] use std::hash::Hash;
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+use std::collections::hash_map::{DefaultHasher, RandomState};
 use std::path::PathBuf;
 // hide console window on Windows in release
 use std::{ffi::OsString, path::Path};
@@ -10,6 +11,7 @@ use egui_extras::{TableBuilder, Column};
 use rfd::FileDialog;
 use std::sync::mpsc;
 use std::{env, thread};
+use std::hash::{BuildHasher, Hash, Hasher};
 
 
 fn main() -> Result<(), eframe::Error> {
@@ -324,35 +326,45 @@ fn select_all_checkbox(ui: &mut egui::Ui, all: &mut Vec<FileInfo>, selected: &mu
     }
 }
 
+struct FileInfoHasher;
+impl BuildHasher for FileInfoHasher {
+    type Hasher = DefaultHasher;
+
+    fn build_hasher(&self) -> DefaultHasher {
+        DefaultHasher::new()
+    }
+}
+
+impl Hash for FileInfo {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.filename.hash(state);
+        self.size.hash(state);
+    }
+}
+
+impl PartialEq for FileInfo {
+    fn eq(&self, other: &FileInfo) -> bool {
+        self.filename == other.filename && self.size == other.size
+    }
+}
+
+impl Eq for FileInfo {}
+
 
 async fn find_diffs(dir1: &OsString, dir2: &OsString) -> std::io::Result<CompInfo> {
-    let mut names1: HashSet<(OsString, u64)> = HashSet::with_capacity(10000);
-    let mut names2: HashSet<(OsString, u64)> = HashSet::with_capacity(10000);
+    // let mut names1: HashSet<(OsString, u64)> = HashSet::with_capacity(10000);
+    // let mut names2: HashSet<(OsString, u64)> = HashSet::with_capacity(10000);
 
-    let mut _left_path_map: HashMap<OsString, PathBuf> = HashMap::with_capacity(10000);
-    let mut _right_path_map: HashMap<OsString, PathBuf> = HashMap::with_capacity(10000);
+    let mut names1: HashSet<FileInfo, FileInfoHasher> = HashSet::with_capacity_and_hasher(10000, FileInfoHasher);
+    let mut names2: HashSet<FileInfo, FileInfoHasher> = HashSet::with_capacity_and_hasher(10000, FileInfoHasher);
 
-    let fut1 = collect_filenames(dir1, &mut names1, &mut _left_path_map);
-    let fut2 = collect_filenames(dir2, &mut names2, &mut _right_path_map);
+    let fut1 = collect_filenames(dir1, &mut names1);
+    let fut2 = collect_filenames(dir2, &mut names2);
 
     let _ = tokio::join!(fut1, fut2);
 
-    let _lefts: Vec<FileInfo> = names1.difference(&names2).map(|(nm, sz)| 
-        FileInfo {
-            path: _left_path_map.get(nm).expect("Error: Path map does not exhaustively contain all filenames. Ask Josh.").to_owned(),
-            filename: nm.to_owned(), 
-            should_copy: false, 
-            size: sz.to_owned()
-        }
-    ).collect();
-    let _rights: Vec<FileInfo> = names2.difference(&names1).map(|(nm, sz)| 
-        FileInfo {
-            path: _right_path_map.get(nm).expect("Error: Path map does not exhaustively contain all filenames. Ask Josh.").to_owned(),
-            filename: nm.to_owned(), 
-            should_copy: false, 
-            size: sz.to_owned()
-        }
-    ).collect();
+    let _lefts: Vec<FileInfo> = names1.difference(&names2).map(|fi| fi.to_owned()).collect();
+    let _rights: Vec<FileInfo> = names2.difference(&names1).map(|fi| fi.to_owned()).collect();
 
     Ok(CompInfo {
         left: _lefts,
@@ -363,7 +375,7 @@ async fn find_diffs(dir1: &OsString, dir2: &OsString) -> std::io::Result<CompInf
 }
 
 #[async_recursion(?Send)]
-async fn collect_filenames<P: AsRef<Path>>(path: P, out: &mut HashSet<(OsString, u64)>, path_map: &mut HashMap<OsString, PathBuf>) -> std::io::Result<()> {
+async fn collect_filenames<P: AsRef<Path>>(path: P, out: &mut HashSet<FileInfo, FileInfoHasher>) -> std::io::Result<()> {
     for entry in std::fs::read_dir(path)? {
         let entry = match entry {
             Err(_) => continue,
@@ -377,12 +389,12 @@ async fn collect_filenames<P: AsRef<Path>>(path: P, out: &mut HashSet<(OsString,
         } else {
             continue
         }
-        out.insert((name.clone(), filesize));
         
         if path.is_dir() {
-            collect_filenames(&path, out, path_map).await.ok();
+            collect_filenames(&path, out).await.ok();
         }
-        path_map.insert(name, path);
+
+        out.insert(FileInfo {filename: name.clone(), size: filesize, path: path, should_copy: false});
     }
     Ok(())
 }
