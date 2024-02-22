@@ -19,6 +19,12 @@ jobs:
       run: cargo install cargo-bundle
     - name: Make bundle
       run: cargo bundle --release --target x86_64-apple-darwin
+    - name: List All Files
+      run: |
+        ls
+    - name: List files in subdir
+      run: |
+        ls ./target/x86_64-apple-darwin/release/bundle/osx
     - name: GH Release        
       uses: softprops/action-gh-release@v0.1.15
       with:
