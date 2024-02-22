@@ -369,7 +369,7 @@ async fn find_diffs(dir1: &OsString, dir2: &OsString) -> std::io::Result<CompInf
         left_path: PathBuf::from(dir1),
         right_path: PathBuf::from(dir2)
     })
-} 
+}
 
 #[async_recursion(?Send)]
 async fn collect_filenames<P: AsRef<Path>>(path: P, out: &mut HashSet<FileInfo, FileInfoHasher>) -> std::io::Result<()> {
