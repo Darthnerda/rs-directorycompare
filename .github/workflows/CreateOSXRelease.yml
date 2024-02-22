@@ -21,6 +21,8 @@ jobs:
       run: cargo bundle --release --target x86_64-apple-darwin
     - name: GH Release        
       uses: softprops/action-gh-release@v0.1.15
+      with:
+        files: /Users/runner/work/rs-directorycompare/rs-directorycompare/target/x86_64-apple-darwin/release/bundle/osx/Directory Compare.app
     # - name: Create Release
     #   id: create_release
     #   uses: actions/create-release@v1
