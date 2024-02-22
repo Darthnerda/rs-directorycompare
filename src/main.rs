@@ -352,9 +352,6 @@ impl Eq for FileInfo {}
 
 
 async fn find_diffs(dir1: &OsString, dir2: &OsString) -> std::io::Result<CompInfo> {
-    // let mut names1: HashSet<(OsString, u64)> = HashSet::with_capacity(10000);
-    // let mut names2: HashSet<(OsString, u64)> = HashSet::with_capacity(10000);
-
     let mut names1: HashSet<FileInfo, FileInfoHasher> = HashSet::with_capacity_and_hasher(10000, FileInfoHasher);
     let mut names2: HashSet<FileInfo, FileInfoHasher> = HashSet::with_capacity_and_hasher(10000, FileInfoHasher);
 

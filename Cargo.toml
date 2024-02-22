@@ -1,5 +1,6 @@
 [package]
 name = "DirectoryCompare"
+description = "A program for rectifying differences between directories."
 version = "0.1.0"
 edition = "2021"
 
@@ -16,3 +17,11 @@ rfd = "0.13.0"
 [profile.release-with-debug]
 inherits = "release"
 debug = true
+
+[package.metadata.bundle]
+name = "Directory Compare"
+identifier = "io.github.Darthnerda.rs-directorycompare"
+icon = ["images/32x32.png", "images/128x128.png", "images/1024x1024@2x.png"]
+category = "public.app-category.utilities"
+short_description = "A directory comparing program."
+long_description = "A program that lets you see what files are missing between two directories irrespective of how they are nested."
