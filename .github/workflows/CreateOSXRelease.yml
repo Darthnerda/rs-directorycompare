@@ -24,7 +24,7 @@ jobs:
         ls
     - name: List files in subdir
       run: |
-        ls -lZ ./target/x86_64-apple-darwin/release/bundle/osx
+        ls ./target/x86_64-apple-darwin/release/bundle/osx
     - name: GH Release        
       uses: softprops/action-gh-release@v0.1.15
       with:
