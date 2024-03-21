@@ -25,7 +25,7 @@ fn main() -> std::io::Result<()> {
 #[derive(Clone)]
 #[derive(Serialize)]
 struct FileInfo {
-    filename: OsString,
+    filename: String,
     path: PathBuf,
     should_copy: bool,
     size: u64
@@ -152,7 +152,9 @@ async fn collect_filenames<P: AsRef<Path> + std::marker::Send>(path: P, out: &mu
             collect_filenames(&path, out).await.ok();
         }
 
-        out.insert(FileInfo {filename: name.clone(), size: filesize, path: path, should_copy: false});
+        let string_name: String = name.into_string().or_else(|_: OsString| -> Result<String, String> {Err("Couldn't convert OsString of filename to UTF-8 String".to_string())})?;
+
+        out.insert(FileInfo {filename: string_name, size: filesize, path: path, should_copy: false});
     }
     Ok(())
 }
