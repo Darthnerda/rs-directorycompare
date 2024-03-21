@@ -1,0 +1,44 @@
+[package]
+name = "app"
+version = "0.2.0"
+description = "A program for rectifying differences between directories."
+authors = ["you"]
+license = ""
+repository = ""
+default-run = "app"
+edition = "2021"
+rust-version = "1.60"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.5.1", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.6.1", features = [] }
+futures = "0.3"
+tokio = { version = "1.35.1", features = ["full"] }
+async-recursion = "1.0.5"
+# eframe = "0.26.0"
+# egui_extras = "0.26.0"
+rfd = "0.14.1"
+
+[features]
+# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
+# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
+# DO NOT REMOVE!!
+custom-protocol = [ "tauri/custom-protocol" ]
+
+[profile.release-with-debug]
+inherits = "release"
+debug = true
+
+[package.metadata.bundle]
+name = "Directory Compare"
+identifier = "io.github.Darthnerda.rs-directorycompare"
+icon = ["images/32x32.png", "images/128x128.png", "images/1024x1024@2x.png"]
+category = "public.app-category.utilities"
+short_description = "A directory comparing program."
+long_description = "A program that lets you see what files are missing between two directories irrespective of how they are nested."
